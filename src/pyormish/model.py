@@ -173,16 +173,16 @@ class Model(object):
         key, _id = rows[0].popitem()
         return self.get_many([_id])[0]
 
-    def get_many(self, ids, _start=0, _limit=_GET_LIMIT):
+    def get_many(self, ids):
         if not self._GET_MANY_SQL:
             raise StandardError("_GET_MANY_SQL is not defined")
         ids = [str(int(i)) for i in ids]
-        sql = self._GET_MANY_SQL % ','.join(ids) \
-            + " LIMIT %s,%s"%(int(_start), int(_limit))
+        sql = self._GET_MANY_SQL % ','.join(ids)
+          
         olist = []
         dl = self.db.select(sql)
         if not dl:
-            return None
+            return []
         return self._build_objects(dl)
             
     def get_many_by_query(self, sql, **kwargs):
@@ -203,7 +203,7 @@ class Model(object):
         rows = self.db.select(sql, kwargs)
         ids = [r.popitem()[1] for r in rows]
         if not ids:
-            return None
+            return []
         return self.get_many(ids)
 
 
