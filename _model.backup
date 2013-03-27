@@ -1,0 +1,137 @@
+import logging
+from session import MySQL, SQLite, Postgres
+
+class Model(object):
+    """ The generic model object for interacting with SQL databases """
+    GET_MANY_SQL = None
+    GET_ID_SQL = None
+    UPDATE_SQL = None
+    CREATE_SQL = None
+    DELETE_SQL = None
+    GET_LIMIT = 50
+    session = None
+    db = None
+    d = None
+
+    def __init__(self, _id=None):
+        if not self.session:
+            raise StandardError("No database connection specified")
+        self.db = self.session
+
+        if(_id):
+            olist = self.get_many([_id])
+            if not olist:
+                return None     
+            self.d = olist[0].d
+            self.__dict__.update(olist[0].d)
+            self.make()
+    
+    def _build_objects(self, dl):
+        """Internal method for updating object properties"""
+        olist = []
+        for i in range(len(dl)):
+            sobj = self.__class__()
+            sobj.__class__ = self.__class__
+            sobj.d = dl[i]
+            sobj.__dict__.update(dl[i])
+            sobj.make()
+            olist.append(sobj)
+        return olist
+
+    def create(self, **kwargs):
+        """Create a new object in the database, and return that object"""
+        if not self.CREATE_SQL:
+            msg = "CREATE_SQL is not defined"
+            logging.error(msg)
+            raise StandardError(msg)
+        for sql in self.CREATE_SQL:
+            if not self.db.execute(sql, kwargs):
+                return None
+        _id = self.db._cursor.lastrowid
+        return self.get_many([_id])[0]
+
+    def commit(self):
+        """Execute UPDATE_SQL using self.* properties"""
+        if not self.UPDATE_SQL:
+            raise StandardError("UPDATE_SQL is not defined")
+        for sql in self.UPDATE_SQL:
+            if not self.db.execute(sql, self.__dict__):
+                sql = sql % self.__dict__
+                raise StandardError("Unable to commit ```%s```"%(sql))
+        return True
+
+    def delete(self):
+        if not self.DELETE_SQL:
+            raise StandardError("DELETE_SQL is not defined")
+        for sql in self.DELETE_SQL:
+            self.db.execute(sql, self.__dict__)
+        del(self)
+            
+    def make(self):
+        return None
+
+    def get_by_field(self, **kwargs):
+        if not self.GET_ID_SQL:
+            raise StandardError("GET_ID_SQL is not defined")
+        if not kwargs:
+            return None
+        wheres = []
+        if isinstance(self.db, MySQL):
+            for k,v in kwargs.items():
+                wheres.append("`%s`=%%(%s)s"%(k, k))
+        elif isinstance(self.db, SQLite):
+            for k,v in kwargs.items():
+                wheres.append("`%s`=:%s"%(k, k))
+        else:
+            raise StandardError("Class unknown!")
+
+        sql = self.GET_ID_SQL + " %s"%(" AND ".join(wheres))
+        rows = self.db.select(sql, kwargs)
+        if not rows:
+            return None
+        key, _id = rows[0].popitem()
+        return self.get_many([_id])[0]
+
+    def get_by_where(self, where, **kwargs):
+        if not self.GET_ID_SQL:
+            raise StandardError("GET_ID_SQL is not defined")
+        if "WHERE" not in self.GET_ID_SQL.upper()+where.upper():
+            where = "WHERE " + where
+        sql = self.GET_ID_SQL + " " + where
+        rows = self.db.select(sql, kwargs)
+        if not rows:
+            return None
+        key, _id = rows[0].popitem()
+        return self.get_many([_id])[0]
+
+    def get_many(self, ids, _start=0, _limit=GET_LIMIT):
+        if not self.GET_MANY_SQL:
+            raise StandardError("GET_MANY_SQL is not defined")
+        ids = [str(int(i)) for i in ids]
+        sql = self.GET_MANY_SQL % ','.join(ids) \
+            + " LIMIT %s,%s"%(int(_start), int(_limit))
+        olist = []
+        dl = self.db.select(sql)
+        return self._build_objects(dl)
+            
+    def get_many_by_query(self, sql, **kwargs):
+        """ Like get_many, but allows a generic query """
+        dl = self.db.select(sql, kwargs)
+        return self._build_objects(dl)
+ 
+    def get_many_by_where(self, where, **kwargs):
+        if not self.GET_ID_SQL:
+            msg = "GET_ID_SQL is not defined"
+            logging.error(msg)
+            raise StandardError(msg)
+        if "WHERE" not in self.GET_ID_SQL.upper()+where.upper():
+            where = "WHERE " + where
+        sql = self.GET_ID_SQL + " " + where
+        sql = sql + " LIMIT %s,%s"%(int(kwargs.get('_start',0)), 
+            int(kwargs.get('_limit',self.GET_LIMIT)))
+        rows = self.db.select(sql, kwargs)
+        ids = [r.popitem()[1] for r in rows]
+        if not ids:
+            return None
+        return self.get_many(ids)
+
