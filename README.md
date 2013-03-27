@@ -1,4 +1,4 @@
 pyormish
 ========
 
-An ORM-ish Python utility, designed to work with existing repositories.
+An ORM-ish Python utility, designed to work with existing databases.
