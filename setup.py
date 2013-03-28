@@ -9,9 +9,14 @@ from pyormish import __version__
 setup(name='pyormish',
     version = __version__,
     description = 'A simple, ultra-lightweight ORM for MySQL, SQLite, and Postgres',
+    long_description = (
+        "PyORMish is an ORM (ish) thing designed to provide quick and easy OO data access "
+        "without all the mumbo jumbo of a traditional ORM. "
+    ),
     author = 'Aaron Meier',
     author_email = 'webgovernor@gmail.com',
     packages = ['pyormish'],
     package_dir={'pyormish':'src/pyormish'},
-    url = 'http://www.python.org/community/sigs/current/distutils-sig/'
+    url = 'http://pyormish.nullism.com',
+    license = 'Apache License, Version 2'
 )

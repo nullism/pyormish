@@ -54,6 +54,15 @@ class Model(object):
             olist.append(sobj)
         return olist
 
+    def _create(self):
+        pass
+
+    def _delete(self):
+        pass
+
+    def _commit(self):
+        pass
+
     def make_sql(self):
         
         p_f_sql = '`%s`.`'%(self._TABLE_NAME)+self._PRIMARY_FIELD+'`'
@@ -120,7 +129,9 @@ class Model(object):
             if not self.db.execute(sql, kwargs):
                 return None
         _id = self.db._cursor.lastrowid
-        return self.get_many([_id])[0]
+        obj = self.get_many([_id])[0]
+        obj._create()
+        return obj
 
     def commit(self):
         """Execute _COMMIT_SQL using self.* properties"""
@@ -133,6 +144,7 @@ class Model(object):
             if not self.db.execute(sql, self.__dict__):
                 sql = sql % self.__dict__
                 raise StandardError("Unable to commit ```%s```"%(sql))
+        self._commit()
         return True
 
     def delete(self):
@@ -140,6 +152,7 @@ class Model(object):
             raise StandardError("_DELETE_SQL is not defined")
         for sql in self._DELETE_SQL:
             self.db.execute(sql, self.__dict__)
+        self._delete()
         del(self)
             
     def make(self):
