@@ -107,27 +107,22 @@ class Model(object):
         self._DELETE_SQL = ['DELETE FROM `%s` WHERE `%s`=%%(%s)s'%(
             self._TABLE_NAME, self._PRIMARY_FIELD, self._PRIMARY_FIELD)]
 
-        c_fs = []
-        v_fs = []
-        for f in self._COMMIT_FIELDS:
-            c_fs.append('`%s`'%(f))
-            v_fs.append('%%(%s)s'%(f))
-        self._CREATE_SQL = ['INSERT INTO `%s` (%s) VALUES (%s)'%(
-            self._TABLE_NAME, ','.join(c_fs), ','.join(v_fs))]
 
     def create(self, **kwargs):
         """Create a new object in the database, and return that object"""
-        if not self._CREATE_SQL:
-            msg = "_CREATE_SQL is not defined"
-            logging.error(msg)
-            raise StandardError(msg)
-        for sql in self._CREATE_SQL:
-            for k in kwargs.keys():
-                if getattr(self, '_set_%s'%(k), None):
-                    getattr(self, '_set_%s'%(k), None)(kwargs[k])
-                    kwargs[k] = getattr(self, '_get_%s'%(k))()
-            if not self.db.execute(sql, kwargs):
-                return None
+
+        c_fs = []; v_fs = []
+        for k in kwargs.keys():
+            c_fs.append('`%s`'%(k))
+            v_fs.append('%%(%s)s'%(k))
+            if getattr(self, '_set_%s'%(k), None):
+                getattr(self, '_set_%s'%(k), None)(kwargs[k])
+                kwargs[k] = getattr(self, '_get_%s'%(k))()
+        sql = 'INSERT INTO `%s` (%s) VALUES (%s)'%(
+            self._TABLE_NAME, ','.join(c_fs), ','.join(v_fs))            
+
+        if not self.db.execute(sql, kwargs):
+            return None
         _id = self.db._cursor.lastrowid
         obj = self.get_many([_id])[0]
         obj._create()
