@@ -181,7 +181,7 @@ class Model(object):
         key, _id = rows[0].popitem()
         return self.get_many([_id])[0]
 
-    def get_many(self, ids):
+    def get_many(self, ids, order_fields=None):
         if not self._GET_MANY_SQL:
             raise StandardError("_GET_MANY_SQL is not defined")
         ids = [str(int(i)) for i in ids]
