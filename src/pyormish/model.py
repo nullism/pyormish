@@ -153,7 +153,7 @@ class Model(object):
     def make(self):
         return None
 
-    def get_by_field(self, **kwargs):
+    def get_by_fields(self, **kwargs):
         if not self._GET_ID_SQL:
             raise StandardError("_GET_ID_SQL is not defined")
         if not kwargs:
@@ -168,6 +168,7 @@ class Model(object):
             return None
         key, _id = rows[0].popitem()
         return self.get_many([_id])[0]
+    get_by_field = get_by_fields
 
     def get_by_where(self, where, **kwargs):
         if not self._GET_ID_SQL:
