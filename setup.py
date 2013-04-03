@@ -2,7 +2,9 @@
 from distutils.core import setup
 import os
 import sys
+import os
 
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__),'src'))
 from pyormish import __version__
 
@@ -18,6 +20,6 @@ setup(name='pyormish',
     packages = ['pyormish'],
     package_dir={'pyormish':'src/pyormish'},
     package_data={'pyormish':['examples/*.py']},
-    url = 'http://pyormish.nullism.com',
+    url = 'http://pypi.python.org/pypi/pyormish',
     license = 'Apache License, Version 2'
 )
