@@ -198,6 +198,12 @@ class Model(object):
         """ Like get_many, but allows a generic query """
         dl = self.db.select(sql, kwargs)
         return self._build_objects(dl)
+
+    def get_many_by_fields(self, **kwargs):
+        wheres = []
+        for k in kwargs.keys():
+            wheres.append('`%s`.`%s`=%%(%s)s'%(self._TABLE_NAME, k, k))
+        return self.get_many_by_where(' AND '.join(wheres), **kwargs)
  
     def get_many_by_where(self, where, **kwargs):
         if not self._GET_ID_SQL:
@@ -213,6 +219,6 @@ class Model(object):
         ids = [r.popitem()[1] for r in rows]
         if not ids:
             return []
-        return self.get_many(ids)
+        return self.get_many(ids, kwargs.get('order_fields',None))
 
 
