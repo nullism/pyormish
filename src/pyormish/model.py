@@ -168,7 +168,6 @@ class Model(object):
             return None
         key, _id = rows[0].popitem()
         return self.get_many([_id])[0]
-    get_by_field = get_by_fields
 
     def get_by_where(self, where, **kwargs):
         if not self._GET_ID_SQL:

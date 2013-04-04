@@ -44,6 +44,13 @@ class User(Model):
     _PRIMARY_FIELD = 'id' # The primary id field, auto_incrmenting in our case
     _SELECT_FIELDS = ['id','username','fullname','password'] # Only select these fields
     _COMMIT_FIELDS = ['username','fullname','password'] # Only save these fields
+    """ Join example allowing user.message_count in one query
+    _JOINS = [
+        { 'type':'LEFT', 'table':'messages', 'on':'messages.user_id=user.id',
+          'fields':['COUNT(messages.id) as message_count'],
+          'group_by':'GROUP BY user.id' }
+    ]
+    """
 
     def __repr__(self):
         return '<User(%s) - %s>'%(self.id, self.username)
