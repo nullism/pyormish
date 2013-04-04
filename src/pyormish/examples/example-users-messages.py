@@ -44,13 +44,12 @@ class User(Model):
     _PRIMARY_FIELD = 'id' # The primary id field, auto_incrmenting in our case
     _SELECT_FIELDS = ['id','username','fullname','password'] # Only select these fields
     _COMMIT_FIELDS = ['username','fullname','password'] # Only save these fields
-    """ Join example allowing user.message_count in one query
     _JOINS = [
-        { 'type':'LEFT', 'table':'messages', 'on':'messages.user_id=user.id',
-          'fields':['COUNT(messages.id) as message_count'],
-          'group_by':'GROUP BY user.id' }
+        { 'type':'LEFT', 'table':'messages', 'on':'messages.from_user_id=users.id',
+          'fields':['COUNT(messages.id) as sent_message_count'],
+          'group_by':'users.id' }
     ]
-    """
+    
 
     def __repr__(self):
         return '<User(%s) - %s>'%(self.id, self.username)
@@ -85,7 +84,7 @@ if __name__ == "__main__":
     for user_d in user_list:
         user = User().create(**user_d)
     
-        print user.id, user.username, user.fullname
+        print user.id, user.username, user.fullname, user.sent_message_count
         user.send_message(1, "BOOOYAH!")
         user.delete()
         
