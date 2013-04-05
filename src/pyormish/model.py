@@ -160,7 +160,10 @@ class Model(object):
             return None
         wheres = []
         for k,v in kwargs.items():
-            wheres.append("`%s`=%%(%s)s"%(k, k))
+            if v == None:
+                wheres.append('`%s` IS NULL'%(k))
+            else:
+                wheres.append("`%s`=%%(%s)s"%(k, k))
 
         sql = self._GET_ID_SQL + " %s"%(" AND ".join(wheres))
         rows = self.db.select(sql, kwargs)
@@ -200,8 +203,11 @@ class Model(object):
 
     def get_many_by_fields(self, **kwargs):
         wheres = []
-        for k in kwargs.keys():
-            wheres.append('`%s`.`%s`=%%(%s)s'%(self._TABLE_NAME, k, k))
+        for k,v in kwargs.items():
+            if v == None:
+                wheres.append('`%s`.`%s` IS NULL'%(self._TABLE_NAME,  k))
+            else:
+                wheres.append('`%s`.`%s`=%%(%s)s'%(self._TABLE_NAME, k, k))
         return self.get_many_by_where(' AND '.join(wheres), **kwargs)
  
     def get_many_by_where(self, where, **kwargs):
