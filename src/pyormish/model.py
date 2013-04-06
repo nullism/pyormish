@@ -36,6 +36,10 @@ class Model(object):
     d = None
 
     def __init__(self, _id=None):
+        """Build SQL queries for object and 
+        if _id is present, attempt to load an 
+        object where _PRIMARY_KEY = _id
+        """
         if not self.session:
             raise StandardError("No database connection specified")
         self.db = self.session
@@ -49,7 +53,7 @@ class Model(object):
             self.make()
     
     def _build_objects(self, dl):
-        """Internal method for updating object properties"""
+        """Build a list of objects from dl (list)."""
         olist = []
         for i in range(len(dl)):
             sobj = self.__class__()
@@ -70,16 +74,19 @@ class Model(object):
         return olist
 
     def _create(self):
+        """Called after self.create()"""
         pass
 
     def _delete(self):
+        """Called after self.delete()"""
         pass
 
     def _commit(self):
+        """Called after self.commit()"""
         pass
 
     def make_sql(self):
-        
+        """Build SQL from instance variables."""
         p_f_sql = '`%s`.`'%(self._TABLE_NAME)+self._PRIMARY_FIELD+'`'
         f_sql = ['`%s`.`'%(self._TABLE_NAME)+f+'`' for f in self._SELECT_FIELDS]
         wheres = 'WHERE `%s`.`%s` IN (%%s)'%(self._TABLE_NAME, self._PRIMARY_FIELD)
@@ -124,8 +131,7 @@ class Model(object):
 
 
     def create(self, **kwargs):
-        """Create a new object in the database, and return that object"""
-
+        """Create a new object in the database and return that object"""
         c_fs = []; v_fs = []
         for k in kwargs.keys():
             c_fs.append('`%s`'%(k))
@@ -158,6 +164,7 @@ class Model(object):
         return True
 
     def delete(self):
+        """Delete and commit self from the database"""
         if not self._DELETE_SQL:
             raise StandardError("_DELETE_SQL is not defined")
         for sql in self._DELETE_SQL:
@@ -169,6 +176,9 @@ class Model(object):
         return None
 
     def get_by_fields(self, **kwargs):
+        """Return a single row with fields equal 
+        to those specified in kwargs.
+        """
         if not self._GET_ID_SQL:
             raise StandardError("_GET_ID_SQL is not defined")
         if not kwargs:
@@ -188,6 +198,9 @@ class Model(object):
         return self.get_many([_id])[0]
 
     def get_by_where(self, where, **kwargs):
+        """Return a single object from the database
+        based on where (str). Binds to kwargs.
+        """
         if not self._GET_ID_SQL:
             raise StandardError("_GET_ID_SQL is not defined")
         if "WHERE" not in self._GET_ID_SQL.upper()+where.upper():
@@ -200,6 +213,9 @@ class Model(object):
         return self.get_many([_id])[0]
 
     def get_many(self, ids, order_fields=None):
+        """Return multiple objects from the database
+        where self._PRIMARY_KEY in ids (list).
+        """
         if not self._GET_MANY_SQL:
             raise StandardError("_GET_MANY_SQL is not defined")
         ids = [str(int(i)) for i in ids]
@@ -212,11 +228,16 @@ class Model(object):
         return self._build_objects(dl)
             
     def get_many_by_query(self, sql, **kwargs):
-        """ Like get_many, but allows a generic query """
+        """Return multiple objects from the database
+        based on match from query sql (str).
+        """
         dl = self.db.select(sql, kwargs)
         return self._build_objects(dl)
 
     def get_many_by_fields(self, **kwargs):
+        """Like get_by_fields() but return multiple
+        rows instead of the first match.
+        """
         wheres = []
         for k,v in kwargs.items():
             if v == None:
@@ -226,6 +247,9 @@ class Model(object):
         return self.get_many_by_where(' AND '.join(wheres), **kwargs)
  
     def get_many_by_where(self, where, **kwargs):
+        """Like get_by_where() but return multiple 
+        rows instead of the first match.
+        """
         if not self._GET_ID_SQL:
             msg = "_GET_ID_SQL is not defined"
             logging.error(msg)
