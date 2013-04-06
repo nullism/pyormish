@@ -223,7 +223,7 @@ class Model(object):
         sql = self._GET_MANY_SQL % ','.join(ids)
         if order_fields:
             o_fs = []
-            for o in self._ORDER_FIELDS:
+            for o in order_fields:
                 o_fs.append('`%s`.`%s` %s'%(self._TABLE_NAME, o[0], o[1]))
             sql = sql + ' ORDER BY %s'%(','.join(o_fs))
             
