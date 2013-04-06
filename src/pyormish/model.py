@@ -1,19 +1,20 @@
 """
 Copyright 2012 Aaron Meier
 
-Licensed under the Apache License, Version 2.0 (the "License"); 
-you may not use this file except in compliance with the License. 
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
 http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, 
-software distributed under the License is distributed on an "AS IS" BASIS, 
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-See the License for the specific language governing permissions and 
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
 limitations under the License.
 """
 import logging
+
 
 class Model(object):
     """ The generic model object for interacting with SQL databases """
@@ -87,7 +88,6 @@ class Model(object):
 
     def make_sql(self):
         """Build SQL from instance variables."""
-        p_f_sql = '`%s`.`'%(self._TABLE_NAME)+self._PRIMARY_FIELD+'`'
         f_sql = ['`%s`.`'%(self._TABLE_NAME)+f+'`' for f in self._SELECT_FIELDS]
         wheres = 'WHERE `%s`.`%s` IN (%%s)'%(self._TABLE_NAME, self._PRIMARY_FIELD)
         joins = ''
@@ -107,11 +107,11 @@ class Model(object):
         if group_by:
             group_by = 'GROUP BY %s'%(group_by)
 
-        o_fs = []
-        if self._ORDER_FIELDS:
-            for o in self._ORDER_FIELDS:
-                o_fs.append('`%s`.`%s` %s'%(self._TABLE_NAME, o[0], o[1]))
-            order_by = 'ORDER BY %s'%(','.join(o_fs))
+        #o_fs = []
+        #if self._ORDER_FIELDS:
+        #    for o in self._ORDER_FIELDS:
+        #        o_fs.append('`%s`.`%s` %s'%(self._TABLE_NAME, o[0], o[1]))
+        #    order_by = 'ORDER BY %s'%(','.join(o_fs))
                 
         self._GET_MANY_SQL = 'SELECT %s FROM `%s` %s %s %s %s'%(
             ','.join(f_sql), self._TABLE_NAME, joins, wheres, group_by, order_by)
@@ -218,10 +218,15 @@ class Model(object):
         """
         if not self._GET_MANY_SQL:
             raise StandardError("_GET_MANY_SQL is not defined")
+
         ids = [str(int(i)) for i in ids]
         sql = self._GET_MANY_SQL % ','.join(ids)
-          
-        olist = []
+        if order_fields:
+            o_fs = []
+            for o in self._ORDER_FIELDS:
+                o_fs.append('`%s`.`%s` %s'%(self._TABLE_NAME, o[0], o[1]))
+            sql = sql + ' ORDER BY %s'%(','.join(o_fs))
+            
         dl = self.db.select(sql)
         if not dl:
             return []
