@@ -224,6 +224,9 @@ class Model(object):
         if order_fields:
             o_fs = []
             for o in order_fields:
+                if len(o) > 2:
+                    o_fs.append(o)
+                    continue
                 o_fs.append('`%s`.`%s` %s'%(self._TABLE_NAME, o[0], o[1]))
             sql = sql + ' ORDER BY %s'%(','.join(o_fs))
             
@@ -245,6 +248,8 @@ class Model(object):
         """
         wheres = []
         for k,v in kwargs.items():
+            if k == 'order_fields':
+                continue
             if v == None:
                 wheres.append('`%s`.`%s` IS NULL'%(self._TABLE_NAME,  k))
             else:
