@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from pyormish import Model, session
+from pyormish import Model
 import hashlib
 
 
@@ -24,10 +24,10 @@ class User(Model):
 
 if __name__ == "__main__":   
 
-    Model.session = session.SQLite(':memory:')
+    Model.db_config = dict(DB_PATH=':memory:',DB_TYPE='sqlite')
 
     # Create the users table for this example
-    Model.session.execute('''
+    Model().connection.execute('''
         CREATE TABLE users (
             id INTEGER PRIMARY KEY ASC, 
             username VARCHAR(255) UNIQUE, 
@@ -35,6 +35,7 @@ if __name__ == "__main__":
             password VARCHAR(256)
         )    
     ''')
+   
 
     # Let's create some users
     user_list = [

@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import logging
+import session
+connection = None
 
 
 class Model(object):
@@ -32,8 +34,8 @@ class Model(object):
     _JOINS = None
     _ORDER_FIELDS = None
       
-    session = None
-    db = None
+    db_config = None
+    connection = None
     d = None
 
     def __init__(self, _id=None):
@@ -41,11 +43,40 @@ class Model(object):
         if _id is present, attempt to load an 
         object where _PRIMARY_KEY = _id
         """
-        if not self.session:
+        global connection # shared connections
+
+        # You may be wondering what's up with recreating
+        # a mysql connection EACH time a Model is
+        # instantiated. The reason deals with concurrency.
+        # In very rare situations (1 out of about 10K)
+        # a connection will dissappear. This is the best
+        # solution I could think of. If you have a better
+        # suggestion, PLEASE let me know.
+        db_type = self.db_config.get('DB_TYPE','mysql')        
+
+        if db_type == 'mysql':
+            self.connection = session.MySQL(
+                self.db_config['DB_HOST'],
+                self.db_config['DB_USER'],
+                self.db_config['DB_PASS'],
+                self.db_config['DB_NAME']
+            )
+
+        elif db_type == 'postgres':
+            if not connection:
+                connection = session.Postgres(self.db_config['DB_CONN_STRING'])
+            self.connection = connection
+
+        elif db_type == 'sqlite':
+            if not connection:
+                connection = session.SQLite(self.db_config['DB_PATH'])
+            self.connection = connection
+    
+        if not self.connection:
             raise StandardError("No database connection specified")
-        self.db = self.session
+
         self.make_sql()
-        if(_id):
+        if _id:
             olist = self.get_many([_id])
             if not olist:
                 return None     
@@ -142,9 +173,9 @@ class Model(object):
         sql = 'INSERT INTO `%s` (%s) VALUES (%s)'%(
             self._TABLE_NAME, ','.join(c_fs), ','.join(v_fs))            
 
-        if not self.db.execute(sql, kwargs):
+        if not self.connection.execute(sql, kwargs):
             return None
-        _id = self.db._cursor.lastrowid
+        _id = self.connection._cursor.lastrowid
         obj = self.get_many([_id])[0]
         obj._create()
         return obj
@@ -157,7 +188,7 @@ class Model(object):
             for k in self.__dict__.keys():
                 if getattr(self, '_set_%s'%(k), None):
                     self.__dict__[k] = self.__dict__['_'+k]
-            if not self.db.execute(sql, self.__dict__):
+            if not self.connection.execute(sql, self.__dict__):
                 sql = sql % self.__dict__
                 raise StandardError("Unable to commit ```%s```"%(sql))
         self._commit()
@@ -168,7 +199,7 @@ class Model(object):
         if not self._DELETE_SQL:
             raise StandardError("_DELETE_SQL is not defined")
         for sql in self._DELETE_SQL:
-            self.db.execute(sql, self.__dict__)
+            self.connection.execute(sql, self.__dict__)
         self._delete()
         del(self)
             
@@ -191,7 +222,7 @@ class Model(object):
                 wheres.append("`%s`=%%(%s)s"%(k, k))
 
         sql = self._GET_ID_SQL + " %s"%(" AND ".join(wheres))
-        rows = self.db.select(sql, kwargs)
+        rows = self.connection.select(sql, kwargs)
         if not rows:
             return None
         key, _id = rows[0].popitem()
@@ -206,7 +237,7 @@ class Model(object):
         if "WHERE" not in self._GET_ID_SQL.upper()+where.upper():
             where = "WHERE " + where
         sql = self._GET_ID_SQL + " " + where
-        rows = self.db.select(sql, kwargs)
+        rows = self.connection.select(sql, kwargs)
         if not rows:
             return None
         key, _id = rows[0].popitem()
@@ -218,7 +249,6 @@ class Model(object):
         """
         if not self._GET_MANY_SQL:
             raise StandardError("_GET_MANY_SQL is not defined")
-
         ids = [str(int(i)) for i in ids]
         sql = self._GET_MANY_SQL % ','.join(ids)
         if order_fields:
@@ -230,7 +260,7 @@ class Model(object):
                 o_fs.append('`%s`.`%s` %s'%(self._TABLE_NAME, o[0], o[1]))
             sql = sql + ' ORDER BY %s'%(','.join(o_fs))
             
-        dl = self.db.select(sql)
+        dl = self.connection.select(sql)
         if not dl:
             return []
         return self._build_objects(dl)
@@ -239,7 +269,7 @@ class Model(object):
         """Return multiple objects from the database
         based on match from query sql (str).
         """
-        dl = self.db.select(sql, kwargs)
+        dl = self.connection.select(sql, kwargs)
         return self._build_objects(dl)
 
     def get_many_by_fields(self, **kwargs):
@@ -269,7 +299,7 @@ class Model(object):
         sql = self._GET_ID_SQL + " " + where
         sql = sql + " LIMIT %s,%s"%(int(kwargs.get('_start',0)), 
             int(kwargs.get('_limit',self._GET_LIMIT)))
-        rows = self.db.select(sql, kwargs)
+        rows = self.connection.select(sql, kwargs)
         ids = [r.popitem()[1] for r in rows]
         if not ids:
             return []

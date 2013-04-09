@@ -50,10 +50,10 @@ class User(Model):
 
 if __name__ == "__main__":   
 
-    Model.session = session.SQLite(':memory:')
+    Model.db_config = dict(DB_TYPE='sqlite', DB_PATH=':memory:')
 
     # Create the users table for this example
-    Model.session.execute('''
+    Model().connection.execute('''
         CREATE TABLE users (
             id INTEGER PRIMARY KEY ASC, 
             username VARCHAR(255), 
@@ -63,7 +63,7 @@ if __name__ == "__main__":
     ''')
 
     # Create the messages table for this example
-    Model.session.execute('''
+    Model().connection.execute('''
         CREATE TABLE messages (
             id INTEGER PRIMARY KEY ASC,
             to_user_id INTEGER,
