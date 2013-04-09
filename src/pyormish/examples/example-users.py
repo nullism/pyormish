@@ -7,8 +7,8 @@ class User(Model):
 
     _TABLE_NAME = 'users' # The name of the table
     _PRIMARY_FIELD = 'id' # The primary id field, auto_incrmenting in our case
-    _SELECT_FIELDS = ['id','username','fullname','password'] # Only select these fields
-    _COMMIT_FIELDS = ['username','fullname','password'] # Only save these fields
+    _SELECT_FIELDS = ('id','username','fullname','password') # Only select these fields
+    _COMMIT_FIELDS = ('username','fullname','password') # Only save these fields
     
 
     def __repr__(self):
