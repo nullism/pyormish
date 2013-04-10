@@ -78,7 +78,8 @@ class MySQL(GenericSQL):
 
     def __init__(self, host, user, passwd, db):
         import MySQLdb
-        self.conn = MySQLdb.connect(host, user, passwd, db)
+        self.conn = MySQLdb.connect(host, user, passwd, db,
+            use_unicode=True, charset="utf8")
         self._cursor = self.conn.cursor()
 
 class Postgres(GenericSQL):
