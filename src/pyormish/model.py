@@ -84,7 +84,7 @@ class Model(object):
             self.__dict__.update(olist[0].d)
             self.make()
     
-    def _build_objects(self, dl):
+    def _build_objects(self, dl, _data=None):
         """Build a list of objects from dl (list)."""
         olist = []
         for i in range(len(dl)):
@@ -97,7 +97,9 @@ class Model(object):
                             getattr(sobj.__class__, '_set_%s'%(k), None))
                     )
                     dl[i]['_'+k] = v
-            
+
+            if _data:
+                dl[i].update(_data)            
             sobj.d = dl[i]
             sobj.__dict__.update(dl[i])
             sobj.make_sql()
@@ -216,6 +218,8 @@ class Model(object):
             return None
         wheres = []
         for k,v in kwargs.items():
+            if k in ['order_fields','_start','_limit','_data']:
+                continue
             if v == None:
                 wheres.append('`%s` IS NULL'%(k))
             else:
@@ -226,7 +230,7 @@ class Model(object):
         if not rows:
             return None
         key, _id = rows[0].popitem()
-        return self.get_many([_id])[0]
+        return self.get_many([_id], **kwargs)[0]
 
     def get_by_where(self, where, **kwargs):
         """Return a single object from the database
@@ -241,9 +245,9 @@ class Model(object):
         if not rows:
             return None
         key, _id = rows[0].popitem()
-        return self.get_many([_id])[0]
+        return self.get_many([_id], **kwargs)[0]
 
-    def get_many(self, ids, order_fields=None):
+    def get_many(self, ids, **kwargs):
         """Return multiple objects from the database
         where self._PRIMARY_KEY in ids (list).
         """
@@ -251,19 +255,22 @@ class Model(object):
             raise StandardError("_GET_MANY_SQL is not defined")
         ids = [str(int(i)) for i in ids]
         sql = self._GET_MANY_SQL % ','.join(ids)
-        if order_fields:
+        if kwargs.get('order_fields'):
             o_fs = []
-            for o in order_fields:
+            for o in kwargs.get('order_fields'):
                 if len(o) > 2:
                     o_fs.append(o)
                     continue
                 o_fs.append('`%s`.`%s` %s'%(self._TABLE_NAME, o[0], o[1]))
             sql = sql + ' ORDER BY %s'%(','.join(o_fs))
+        start = int(kwargs.get('_start',0))
+        limit = int(kwargs.get('_limit',50))
+        sql = sql + ' LIMIT %s,%s'%(start, limit)
             
         dl = self.connection.select(sql)
         if not dl:
             return []
-        return self._build_objects(dl)
+        return self._build_objects(dl, kwargs.get('_data'))
             
     def get_many_by_query(self, sql, **kwargs):
         """Return multiple objects from the database
@@ -278,7 +285,7 @@ class Model(object):
         """
         wheres = []
         for k,v in kwargs.items():
-            if k == 'order_fields':
+            if k in ['order_fields','_start','_limit','_data']:
                 continue
             if v == None:
                 wheres.append('`%s`.`%s` IS NULL'%(self._TABLE_NAME,  k))
@@ -303,6 +310,6 @@ class Model(object):
         ids = [r.popitem()[1] for r in rows]
         if not ids:
             return []
-        return self.get_many(ids, kwargs.get('order_fields',None))
+        return self.get_many(ids, **kwargs)
 
 
