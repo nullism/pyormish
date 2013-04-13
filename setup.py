@@ -20,6 +20,6 @@ setup(name='pyormish',
     packages = ['pyormish'],
     package_dir={'pyormish':'src/pyormish'},
     package_data={'pyormish':['examples/*.py']},
-    url = 'http://pypi.python.org/pypi/pyormish',
+    url = 'http://pyormish.nullism.com',
     license = 'Apache License, Version 2'
 )
