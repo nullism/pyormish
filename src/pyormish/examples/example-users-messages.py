@@ -40,6 +40,7 @@ class User(Model):
 
     def send_message(self, to_uid, body):
         m = Message().create(from_user_id=self.id, to_user_id=to_uid, body=body)
+        self.sent_message_count += 1
         return m
 
     def _delete(self):
@@ -73,20 +74,15 @@ if __name__ == "__main__":
         )        
     ''')
 
-    # Let's create some users
-    user_list = [
-        {'username':'bill', 'fullname':'Billy Ray', 'password':'SoMuchFOO!'},
-        {'username':'sally', 'fullname':'Sally Joe', 'password':'SoMuchFOO!'},
-        {'username':'jethro', 'fullname':'Jethro Williams', 'password':'SoMuchFOO!'},
-    ]
-    for user_d in user_list:
-        user = User().create(**user_d)
-        # Send a message to user where id=1
-        user.send_message(1, "BOOOYAH!")
+    # Let's create some users 
+    User().create(username='hpotter', fullname='Mr. Potter', password='V0ld3m0rtSuCk5')
+    User().create(username='ronald', fullname='Weasle McGee', password='d3rp')
+    User().create(username='hermy', fullname='Ms. Punctuality', password='Gr4ng3rD4ng3r')
 
     # Let's select those users with a where clause
     users = User().get_many_by_where('users.id > 0', order_fields=[['username','DESC']])
     for u in users:
+        u.send_message(1, 'Hello from %s'%(u.fullname))
         print(u.id, u.username, u.fullname, u.sent_message_count)
         
 
