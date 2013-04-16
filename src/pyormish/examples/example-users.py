@@ -37,14 +37,10 @@ if __name__ == "__main__":
     ''')
    
 
-    # Let's create some users
-    user_list = [
-        {'username':'bill', 'fullname':'Billy Ray', 'password':'SoMuchFOO!'},
-        {'username':'sally', 'fullname':'Sally Joe', 'password':'SoMuchFOO!'},
-        {'username':'jethro', 'fullname':'Jethro Williams', 'password':'SoMuchFOO!'},
-    ]
-    for user_d in user_list:
-        user = User().create(**user_d)
+    # Let's create some users 
+    User().create(username='hpotter', fullname='Mr. Potter', password='V0ld3m0rtSuCk5')
+    User().create(username='ronald', fullname='Weasle McGee', password='d3rp')
+    User().create(username='hermy', fullname='Ms. Punctuality', password='Gr4ng3rD4ng3r')
 
     # Let's select those users with a where clause
     users = User().get_many_by_where('users.id > 0', order_fields=[['username','DESC']])
