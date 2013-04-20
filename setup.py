@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+"""
+Copyright (c) 2012, Aaron Meier
+All rights reserved.
+
+See LICENSE for more information.
+"""
 from distutils.core import setup
 import os
 import sys
