@@ -21,5 +21,5 @@ setup(name='pyormish',
     package_dir={'pyormish':'src/pyormish'},
     package_data={'pyormish':['examples/*.py']},
     url = 'http://pyormish.nullism.com',
-    license = 'Apache License, Version 2'
+    license = 'BSD'
 )
