@@ -15,4 +15,4 @@ limitations under the License.
 """
 from model import Model
 import session
-__version__ = "0.9.4"
+__version__ = "0.9.5"
