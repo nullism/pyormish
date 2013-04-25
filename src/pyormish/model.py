@@ -72,7 +72,7 @@ class Model(object):
             if not olist:
                 return None     
             self._d = olist[0]._d
-            self.__dict__.update(olist[0].d)
+            self.__dict__.update(olist[0]._d)
             self.make()
     
     def _build_objects(self, dl, _data=None):
