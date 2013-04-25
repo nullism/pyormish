@@ -46,7 +46,7 @@ class User(Model):
     def _delete(self):
         """ Automagically called when a .delete() is called """
         sql = "DELETE FROM messages WHERE to_user_id=%(uid)s OR from_user_id=%(uid)s"
-        self.db.execute(sql, {'uid':self.id})
+        self.connection.execute(sql, {'uid':self.id})
     
 
 if __name__ == "__main__":   
