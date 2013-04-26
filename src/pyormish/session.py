@@ -41,7 +41,7 @@ class GenericSQL(object):
         if not rows:
             return []
 
-        logging.debug("SELECT: %s"%(sql))
+        logging.debug("SELECT: %s\n\tBINDS: %s"%(sql, binds))
 
         dl = []
         for row in rows:
@@ -56,7 +56,7 @@ class GenericSQL(object):
             else:
                 res = self._cursor.execute(sql)
             self.conn.commit()
-            logging.debug("EXECUTE: %s"%(sql))
+            logging.debug("EXECUTE: %s\nBINDS: %s"%(sql, binds))
             return True
         except(Exception),e: 
             sql = sql + " : %s"%(binds) if binds else sql

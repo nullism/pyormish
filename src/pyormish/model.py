@@ -23,11 +23,11 @@ class Model(object):
     _PRIMARY_FIELD = None
     _SELECT_GROUP = ''
     _JOINS = None
-    _ORDER_FIELDS = None
-      
+    _ORDER_FIELDS = None  
+    _d = None
+
     db_config = None
     connection = None
-    d = None
 
     def __init__(self, _id=None):
         """Build SQL queries for object and 
@@ -71,7 +71,7 @@ class Model(object):
             olist = self.get_many([_id])
             if not olist:
                 return None     
-            self.d = olist[0].d
+            self._d = olist[0]._d
             self.__dict__.update(olist[0].d)
             self.make()
     
@@ -91,7 +91,7 @@ class Model(object):
 
             if _data:
                 dl[i].update(_data)            
-            sobj.d = dl[i]
+            sobj._d = dl[i]
             sobj.__dict__.update(dl[i])
             sobj.make_sql()
             sobj.make()         
