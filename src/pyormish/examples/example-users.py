@@ -24,7 +24,7 @@ class User(Model):
 
 if __name__ == "__main__":   
 
-    Model.db_config = dict(DB_PATH=':memory:',DB_TYPE='sqlite')
+    Model.set_db_config(DB_PATH=':memory:',DB_TYPE='sqlite')
 
     # Create the users table for this example
     Model().connection.execute('''

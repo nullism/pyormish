@@ -303,4 +303,6 @@ class Model(object):
             return []
         return self.get_many(ids, **kwargs)
 
-
+    @classmethod
+    def set_db_config(cls, **kwargs):
+        cls.db_config = kwargs
