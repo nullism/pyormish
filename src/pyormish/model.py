@@ -254,9 +254,9 @@ class Model(object):
                     continue
                 o_fs.append('`%s`.`%s` %s'%(self._TABLE_NAME, o[0], o[1]))
             sql = sql + ' ORDER BY %s'%(','.join(o_fs))
-        start = int(kwargs.get('_start',0))
-        limit = int(kwargs.get('_limit',50))
-        sql = sql + ' LIMIT %s,%s'%(start, limit)
+        #start = int(kwargs.get('_start',0))
+        #limit = int(kwargs.get('_limit',50))
+        #sql = sql + ' LIMIT %s,%s'%(start, limit)
             
         dl = self.connection.select(sql)
         if not dl:
