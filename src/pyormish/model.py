@@ -254,9 +254,6 @@ class Model(object):
                     continue
                 o_fs.append('`%s`.`%s` %s'%(self._TABLE_NAME, o[0], o[1]))
             sql = sql + ' ORDER BY %s'%(','.join(o_fs))
-        #start = int(kwargs.get('_start',0))
-        #limit = int(kwargs.get('_limit',50))
-        #sql = sql + ' LIMIT %s,%s'%(start, limit)
             
         dl = self.connection.select(sql)
         if not dl:
@@ -295,6 +292,16 @@ class Model(object):
         if "WHERE" not in self._GET_ID_SQL.upper()+where.upper():
             where = "WHERE " + where
         sql = self._GET_ID_SQL + " " + where
+
+        if kwargs.get('order_fields'):
+            o_fs = []
+            for o in kwargs.get('order_fields'):
+                if len(o) > 2:
+                    o_fs.append(o)
+                    continue
+                o_fs.append('`%s`.`%s` %s'%(self._TABLE_NAME, o[0], o[1]))
+            sql = sql + ' ORDER BY %s'%(','.join(o_fs))
+
         sql = sql + " LIMIT %s,%s"%(int(kwargs.get('_start',0)), 
             int(kwargs.get('_limit',self._GET_LIMIT)))
         rows = self.connection.select(sql, kwargs)
