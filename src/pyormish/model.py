@@ -16,7 +16,7 @@ class Model(object):
     _COMMIT_SQL = None
     _CREATE_SQL = None
     _DELETE_SQL = None
-    _GET_LIMIT = 50
+    _GET_LIMIT = 1000
     _SELECT_FIELDS = []
     _COMMIT_FIELDS = []
     _TABLE_NAME = None
