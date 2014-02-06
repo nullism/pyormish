@@ -46,7 +46,7 @@ class Model(object):
         db_type = self.db_config.get('DB_TYPE','mysql')        
 
         if db_type == 'mysql':
-            if not connection:
+            if not connection or not connection.open:
                 connection = session.MySQL(
                     self.db_config['DB_HOST'],
                     self.db_config['DB_USER'],
