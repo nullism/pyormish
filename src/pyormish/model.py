@@ -46,12 +46,14 @@ class Model(object):
         db_type = self.db_config.get('DB_TYPE','mysql')        
 
         if db_type == 'mysql':
-            self.connection = session.MySQL(
-                self.db_config['DB_HOST'],
-                self.db_config['DB_USER'],
-                self.db_config['DB_PASS'],
-                self.db_config['DB_NAME']
-            )
+            if not connection:
+                connection = session.MySQL(
+                    self.db_config['DB_HOST'],
+                    self.db_config['DB_USER'],
+                    self.db_config['DB_PASS'],
+                    self.db_config['DB_NAME']
+                )
+            self.connection = connection
 
         elif db_type == 'postgres':
             if not connection:
