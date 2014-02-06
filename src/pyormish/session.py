@@ -64,6 +64,9 @@ class GenericSQL(object):
             logging.error(msg)
             raise StandardError(msg)
 
+    @property
+    def open(self):
+        return self.conn.open
 
 class MySQL(GenericSQL):
 
