@@ -72,7 +72,7 @@ class Model(object):
         if _id:
             olist = self.get_many([_id])
             if not olist:
-                return None     
+                raise StandardError("Invalid ID specified")
             self._d = olist[0]._d
             self.__dict__.update(olist[0]._d)
             self.make()
