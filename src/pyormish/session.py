@@ -20,10 +20,14 @@ class GenericSQL(object):
             row[name[0]] = value
         return row
 
+    def refresh_cursor(self):
+        pass
+
     def bind_fix(self, sql, binds):
         return sql
 
     def select(self, sql, binds=None):
+        self.refresh_cursor()
         try:
             if binds:
                 sql = self.bind_fix(sql, binds)
@@ -49,6 +53,7 @@ class GenericSQL(object):
         return dl
 
     def execute(self, sql, binds=None):
+        self.refresh_cursor()
         try:
             if binds:
                 sql = self.bind_fix(sql, binds)
@@ -71,10 +76,26 @@ class GenericSQL(object):
 class MySQL(GenericSQL):
 
     def __init__(self, host, user, passwd, db):
+
+        self._host = host
+        self._user = user
+        self._pass = passwd
+        self._db = db
+
         import MySQLdb
         self.conn = MySQLdb.connect(host, user, passwd, db,
             use_unicode=True, charset="utf8")
         self._cursor = self.conn.cursor()
+
+    def refresh_cursor(self):
+        try:
+            self._cursor = self.conn.cursor()
+        except:
+            logger.error('Connection has expired, reconnecting')
+            self.conn = MySQLdb.connect(self._host, self._user, 
+                self._pass, self._db,
+                use_unicode=True, charset="utf8")
+            self._cursor = self.conn.cursor()       
 
 class Postgres(GenericSQL):
     
