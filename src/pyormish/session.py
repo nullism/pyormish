@@ -8,6 +8,9 @@ import logging
 
 class GenericSQL(object):
 
+    def __del__(self):
+        self.close()
+
     def _row2dict(self,data):
 
         if data == None:
@@ -68,6 +71,12 @@ class GenericSQL(object):
             msg = "Unable to execute ```%s```, error: %s"%(sql, e)
             logging.error(msg)
             raise StandardError(msg)
+
+    def close(self):
+        if self._cursor:
+            self._cursor.close()
+        if self.conn and self.conn.open:
+            self.conn.close()
 
     @property
     def open(self):
